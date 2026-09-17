@@ -14,17 +14,17 @@ import { RootStackParamList } from './Types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
-export default function Login({ navigation }: Props) {
-  const [email, setEmail] = useState('');
+export default function Login({ navigation }: Props) { 
+  const [Usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
 
   function handleLogin() {
-    if (!email || !senha) {
-      Alert.alert('Atenção', 'Preencha o e-mail e a senha.');
+    if (!Usuario || !senha) {
+      Alert.alert('Atenção', 'Preencha o Usuário e a senha.');
       return;
     }
 
-    Alert.alert('Login', `Bem-vindo!\n${email}`);
+    Alert.alert('Login', `Bem-vindo!\n${Usuario}`);
   }
 
   return (
@@ -33,16 +33,15 @@ export default function Login({ navigation }: Props) {
 
         <Text style={styles.title}>Login</Text>
 
-        <Text style={styles.label}>E-mail</Text>
+        <Text style={styles.label}>Usuario</Text>
 
         <TextInput
           style={styles.input}
-          placeholder="Digite seu e-mail"
+          placeholder="Digite seu usuário"
           placeholderTextColor="#999"
-          keyboardType="email-address"
           autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
+          value={Usuario}
+          onChangeText={setUsuario}
         />
 
         <Text style={styles.label}>Senha</Text>
@@ -58,7 +57,7 @@ export default function Login({ navigation }: Props) {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={handleLogin}
+          onPress={() => navigation.navigate('Home', { Usuario})}
         >
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
@@ -82,7 +81,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#e6e6e6',
   },
 
   loginContainer: {

@@ -15,12 +15,13 @@ import { RootStackParamList } from './Types';
 type Props = NativeStackScreenProps<RootStackParamList, 'Cadastro'>;
 
 export default function Cadastro({ navigation }: Props) {
+  const [Usuario, setUsuario] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
 
   function handleCadastro() {
-    if (!email || !senha || !confirmarSenha) {
+    if (!email || !senha || !confirmarSenha || !Usuario) {
       Alert.alert('Atenção', 'Preencha todos os campos.');
       return;
     }
@@ -47,6 +48,17 @@ export default function Cadastro({ navigation }: Props) {
       <View style={styles.cadastroContainer}>
 
         <Text style={styles.title}>Criar conta</Text>
+
+        <Text style={styles.label}>Usuario</Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Digite seu usuário"
+          placeholderTextColor="#999"
+          autoCapitalize="none"
+          value={Usuario}
+          onChangeText={setUsuario}
+        />
 
         <Text style={styles.label}>E-mail</Text>
 
@@ -84,7 +96,7 @@ export default function Cadastro({ navigation }: Props) {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={handleCadastro}
+          onPress={() => navigation.navigate('Home', { Usuario})}
         >
           <Text style={styles.buttonText}>Cadastrar</Text>
         </TouchableOpacity>

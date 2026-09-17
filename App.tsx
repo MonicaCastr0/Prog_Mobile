@@ -4,8 +4,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import Login from './Login';
 import Cadastro from './Cadastro';
+import Home from './Home';
 
 import { RootStackParamList } from './Types';
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -27,6 +29,11 @@ export default function App() {
           name="Cadastro"
           component={Cadastro}
         />
+
+        <Stack.Screen
+          name="Home"
+          component={Home} 
+          />
       </Stack.Navigator>
     </NavigationContainer>
   );
