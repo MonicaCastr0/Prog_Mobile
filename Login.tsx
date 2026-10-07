@@ -5,72 +5,94 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
+  Image,
 } from 'react-native';
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from './Types';
+import { validarSenha, validarUsuario } from './validacao';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
-export default function Login({ navigation }: Props) { 
-  const [Usuario, setUsuario] = useState('');
+type Erros = {
+  usuario?: string;
+  senha?: string;
+};
+
+export default function Login({ navigation }: Props) {
+  const [usuario, setUsuario] = useState('');
   const [senha, setSenha] = useState('');
+  const [erros, setErros] = useState<Erros>({});
 
   function handleLogin() {
-    if (!Usuario || !senha) {
-      Alert.alert('Atenção', 'Preencha o Usuário e a senha.');
-      return;
-    }
+    const novosErros: Erros = {
+      usuario: validarUsuario(usuario) ?? undefined,
+      senha: validarSenha(senha) ?? undefined,
+    };
 
-    Alert.alert('Login', `Bem-vindo!\n${Usuario}`);
+    setErros(novosErros);
+
+    // se algum campo tiver erro, não avança
+    if (novosErros.usuario || novosErros.senha) return;
+
+    navigation.navigate('Home', { usuario: usuario.trim() });
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.loginContainer}>
+        <Image
+          source={require('./assets/home_control.png')}
+          style={styles.imagem}
+        />
 
         <Text style={styles.title}>Login</Text>
 
-        <Text style={styles.label}>Usuario</Text>
+        <View style={styles.campo}>
+          <Text style={styles.label}>Usuário</Text>
+          <TextInput
+            style={[styles.input, erros.usuario && styles.inputErro]}
+            placeholder="Digite seu usuário"
+            placeholderTextColor="#999"
+            autoCapitalize="none"
+            value={usuario}
+            onChangeText={(texto) => {
+              setUsuario(texto);
+              if (erros.usuario) setErros((e) => ({ ...e, usuario: undefined }));
+            }}
+          />
+          {erros.usuario && <Text style={styles.erro}>{erros.usuario}</Text>}
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Digite seu usuário"
-          placeholderTextColor="#999"
-          autoCapitalize="none"
-          value={Usuario}
-          onChangeText={setUsuario}
-        />
+        <View style={styles.campo}>
+          <Text style={styles.label}>Senha</Text>
+          <TextInput
+            style={[styles.input, erros.senha && styles.inputErro]}
+            placeholder="Digite sua senha"
+            placeholderTextColor="#999"
+            secureTextEntry
+            value={senha}
+            onChangeText={(texto) => {
+              setSenha(texto);
+              if (erros.senha) setErros((e) => ({ ...e, senha: undefined }));
+            }}
+          />
+          {erros.senha && <Text style={styles.erro}>{erros.senha}</Text>}
+        </View>
 
-        <Text style={styles.label}>Senha</Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Digite sua senha"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={senha}
-          onChangeText={setSenha}
-        />
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('Home', { Usuario})}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Entrar</Text>
         </TouchableOpacity>
 
-       <TouchableOpacity
-        style={styles.registerButton}
-        onPress={() => navigation.navigate('Cadastro')}
-      >
-        <Text style={styles.registerText}>
-          Ainda não possui uma conta? Cadastre-se
-        </Text>
-      </TouchableOpacity>
-
+        <TouchableOpacity
+          style={styles.registerButton}
+          onPress={() => navigation.navigate('Cadastro')}
+        >
+          <Text style={styles.registerText}>
+            Ainda não possui uma conta? Cadastre-se
+          </Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -82,6 +104,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#e6e6e6',
+  },
+
+  imagem: {
+    width: 150,
+    height: 150,
+    marginBottom: 10,
+    resizeMode: 'contain',
+    alignSelf: 'center',
   },
 
   loginContainer: {
@@ -99,6 +129,10 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
 
+  campo: {
+    marginBottom: 18,
+  },
+
   label: {
     fontSize: 16,
     fontWeight: '600',
@@ -111,8 +145,17 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 8,
     paddingHorizontal: 15,
-    marginBottom: 20,
     fontSize: 16,
+  },
+
+  inputErro: {
+    borderColor: '#d93025',
+  },
+
+  erro: {
+    color: '#d93025',
+    fontSize: 13,
+    marginTop: 6,
   },
 
   button: {

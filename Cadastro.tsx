@@ -1,115 +1,146 @@
 import React, { useState } from 'react';
 import {
+  Alert,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Alert,
 } from 'react-native';
 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from './Types';
+import {
+  validarConfirmacao,
+  validarEmail,
+  validarSenha,
+  validarUsuario,
+} from './validacao';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Cadastro'>;
 
+type Erros = {
+  usuario?: string;
+  email?: string;
+  senha?: string;
+  confirmarSenha?: string;
+};
+
 export default function Cadastro({ navigation }: Props) {
-  const [Usuario, setUsuario] = useState('');
+  const [usuario, setUsuario] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [erros, setErros] = useState<Erros>({});
 
   function handleCadastro() {
-    if (!email || !senha || !confirmarSenha || !Usuario) {
-      Alert.alert('Atenção', 'Preencha todos os campos.');
-      return;
-    }
+    const novosErros: Erros = {
+      usuario: validarUsuario(usuario) ?? undefined,
+      email: validarEmail(email) ?? undefined,
+      senha: validarSenha(senha) ?? undefined,
+      confirmarSenha: validarConfirmacao(senha, confirmarSenha) ?? undefined,
+    };
 
-    if (senha !== confirmarSenha) {
-      Alert.alert('Atenção', 'As senhas não são iguais.');
-      return;
-    }
+    setErros(novosErros);
 
-    Alert.alert(
-      'Cadastro realizado',
-      'Sua conta foi criada com sucesso!',
-      [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('Login'),
-        },
-      ]
-    );
+    // se algum campo tiver erro, não avança
+    if (Object.values(novosErros).some(Boolean)) return;
+
+    navigation.navigate('Home', { usuario: usuario.trim() });
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.cadastroContainer}>
-
         <Text style={styles.title}>Criar conta</Text>
 
-        <Text style={styles.label}>Usuario</Text>
+        <View style={styles.campo}>
+          <Text style={styles.label}>Usuário</Text>
+          <TextInput
+            style={[styles.input, erros.usuario && styles.inputErro]}
+            placeholder="Digite seu usuário"
+            placeholderTextColor="#999"
+            autoCapitalize="none"
+            value={usuario}
+            onChangeText={(texto) => {
+              setUsuario(texto);
+              if (erros.usuario) setErros((e) => ({ ...e, usuario: undefined }));
+            }}
+          />
+          {erros.usuario && <Text style={styles.erro}>{erros.usuario}</Text>}
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Digite seu usuário"
-          placeholderTextColor="#999"
-          autoCapitalize="none"
-          value={Usuario}
-          onChangeText={setUsuario}
-        />
+        <View style={styles.campo}>
+          <Text style={styles.label}>E-mail</Text>
+          <TextInput
+            style={[styles.input, erros.email && styles.inputErro]}
+            placeholder="Digite seu e-mail"
+            placeholderTextColor="#999"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={(texto) => {
+              setEmail(texto);
+              if (erros.email) setErros((e) => ({ ...e, email: undefined }));
+            }}
+          />
+          {erros.email && <Text style={styles.erro}>{erros.email}</Text>}
+        </View>
 
-        <Text style={styles.label}>E-mail</Text>
+        <View style={styles.campo}>
+          <Text style={styles.label}>Senha</Text>
+          <TextInput
+            style={[styles.input, erros.senha && styles.inputErro]}
+            placeholder="Mínimo de 8 caracteres"
+            placeholderTextColor="#999"
+            secureTextEntry
+            value={senha}
+            onChangeText={(texto) => {
+              setSenha(texto);
+              // a confirmação depende da senha, então limpa os dois erros
+              if (erros.senha || erros.confirmarSenha) {
+                setErros((e) => ({
+                  ...e,
+                  senha: undefined,
+                  confirmarSenha: undefined,
+                }));
+              }
+            }}
+          />
+          {erros.senha && <Text style={styles.erro}>{erros.senha}</Text>}
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Digite seu e-mail"
-          placeholderTextColor="#999"
-          keyboardType="email-address"
-          autoCapitalize="none"
-          value={email}
-          onChangeText={setEmail}
-        />
+        <View style={styles.campo}>
+          <Text style={styles.label}>Confirmar senha</Text>
+          <TextInput
+            style={[styles.input, erros.confirmarSenha && styles.inputErro]}
+            placeholder="Digite a senha novamente"
+            placeholderTextColor="#999"
+            secureTextEntry
+            value={confirmarSenha}
+            onChangeText={(texto) => {
+              setConfirmarSenha(texto);
+              if (erros.confirmarSenha) {
+                setErros((e) => ({ ...e, confirmarSenha: undefined }));
+              }
+            }}
+          />
+          {erros.confirmarSenha && (
+            <Text style={styles.erro}>{erros.confirmarSenha}</Text>
+          )}
+        </View>
 
-        <Text style={styles.label}>Senha</Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Digite sua senha"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={senha}
-          onChangeText={setSenha}
-        />
-
-        <Text style={styles.label}>Confirmar senha</Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder="Digite a senha novamente"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={confirmarSenha}
-          onChangeText={setConfirmarSenha}
-        />
-
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => navigation.navigate('Home', { Usuario})}
-        >
+        <TouchableOpacity style={styles.button} onPress={handleCadastro}>
           <Text style={styles.buttonText}>Cadastrar</Text>
         </TouchableOpacity>
 
-       <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.navigate('Login')}
-      >
-        <Text style={styles.backText}>
-          Já possui uma conta? Entrar
-        </Text>
-      </TouchableOpacity>
-
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.navigate('Login')}
+        >
+          <Text style={styles.backText}>Já possui uma conta? Entrar</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -138,6 +169,10 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
 
+  campo: {
+    marginBottom: 15,
+  },
+
   label: {
     fontSize: 16,
     fontWeight: '600',
@@ -150,8 +185,17 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 8,
     paddingHorizontal: 15,
-    marginBottom: 15,
     fontSize: 16,
+  },
+
+  inputErro: {
+    borderColor: '#d93025',
+  },
+
+  erro: {
+    color: '#d93025',
+    fontSize: 13,
+    marginTop: 6,
   },
 
   button: {
